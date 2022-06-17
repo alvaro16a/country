@@ -1,24 +1,42 @@
-import logo from './logo.svg';
 import './App.css';
+import axios from 'axios'
+import { useState, useEffect } from 'react';
+import CountriesSearch from './component/CountriesSearch';
+import SearchResult from './component/SearchResult';
+
 
 function App() {
+
+  const [newFilter, setNewFilter] = useState('')
+  const [filteredCountries, setFilteredCountries] = useState([])
+
+  const handFilterChange = (event) => {
+    setNewFilter(event.target.value)
+  }
+
+  useEffect(() => {
+    axios
+      .get('https://restcountries.com/v3.1/all')
+      .then(respuesta => {
+        if (newFilter !== '') {
+          const countries = respuesta.data
+          const resultsFilter = countries.filter(country => country.name.common.toLowerCase().includes(newFilter.toLowerCase()))
+          setFilteredCountries(resultsFilter)
+        }
+      })
+  }, [newFilter])
+
+  const api_key = process.env.REACT_APP_API_KEY
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <CountriesSearch newFilter={newFilter} handFilterChange={handFilterChange}/> 
+      <SearchResult 
+      setNewFilter={setNewFilter} 
+      filteredCountries={filteredCountries} 
+      api_key={api_key}
+      newFilter={newFilter}/> 
+    </>
   );
 }
 
